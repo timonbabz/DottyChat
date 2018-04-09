@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "726240668109",
+    "firebase_url": "https://dottychat.firebaseio.com",
+    "project_id": "dottychat",
+    "storage_bucket": "dottychat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:726240668109:android:7362c283d98a4351",
+        "android_client_info": {
+          "package_name": "com.timothy.dottychat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "726240668109-4ttbhouhg8j33bgi2a2eeu41bii61thk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.timothy.dottychat",
+            "certificate_hash": "a54815a7b7c4ba9cfd5ffa679529d6686fc0abeb"
+          }
+        },
+        {
+          "client_id": "726240668109-oqp266ggsqg9533r98df59p97go2qfbo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDf2XeZKurt_Q5i-4JU3uA7o9wdXAFQakc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "726240668109-oqp266ggsqg9533r98df59p97go2qfbo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

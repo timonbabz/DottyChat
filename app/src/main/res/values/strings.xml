@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">DottyChat</string>
+    <string name="welcome_to">Welcome to</string>
+    <string name="new_user">NEW USER?</string>
+    <string name="create_account">Create account</string>
+    <string name="passwordText">Password</string>
+    <string name="display_name">Display name</string>
+    <string name="log_out">Log out</string>
+    <string name="create_new_account">Create new account</string>
+    <string name="login">Login</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hi_there_dottychat_is_awesome">Hi there, DottyChat is awesome!</string>
+</resources>

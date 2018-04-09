@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/friends"
+        android:title="Friends" />
+    <item
+        android:id="@+id/profile_menu"
+        android:title="My profile" />
+    <item
+        android:id="@+id/log_out"
+        android:icon="@android:drawable/ic_lock_power_off"
+        android:title="@string/log_out" />
+</menu>
