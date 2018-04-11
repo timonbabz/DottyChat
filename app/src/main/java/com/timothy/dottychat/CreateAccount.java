@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.HashMap;
 
@@ -84,8 +85,12 @@ public class CreateAccount extends AppCompatActivity {
 
                             FirebaseUser current_user = FirebaseAuth.getInstance().getCurrentUser();
                             String u_id = current_user.getUid();
+                            String deviceToken = FirebaseInstanceId.getInstance().getToken();
+
                             mDatabase = FirebaseDatabase.getInstance().getReference().child("dottyUsers").child(u_id);
                             HashMap<String, String> userMap = new HashMap<>();
+
+                            userMap.put("device_token", deviceToken);
                             userMap.put("name", mDisplayName);
                             userMap.put("status", "Hi there, DottyChat is awesome!");
                             userMap.put("image", "default");
@@ -98,6 +103,7 @@ public class CreateAccount extends AppCompatActivity {
                                     if (task.isSuccessful())
                                     {
                                         tProgres.dismiss();
+
                                         Intent mainIntent = new Intent(CreateAccount.this, MainActivity.class);
                                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                         startActivity(mainIntent);

@@ -24,6 +24,7 @@ import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -39,6 +40,7 @@ public class ProfileActivity extends AppCompatActivity {
     private DatabaseReference usersDatabase;
     private DatabaseReference friendsRequestDb;
     private DatabaseReference friendsDatabase;
+    private DatabaseReference mNotificationDb;
     private FirebaseUser mUser_current;
 
     private String current_state;
@@ -47,11 +49,12 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        final String user_key = getIntent().getStringExtra("user_id");
+        final String user_id = getIntent().getStringExtra("user_id");
 
-        usersDatabase = FirebaseDatabase.getInstance().getReference().child("dottyUsers").child(user_key);
+        usersDatabase = FirebaseDatabase.getInstance().getReference().child("dottyUsers").child(user_id);
         friendsRequestDb = FirebaseDatabase.getInstance().getReference().child("friend_requests");
         friendsDatabase = FirebaseDatabase.getInstance().getReference().child("friends");
+        mNotificationDb = FirebaseDatabase.getInstance().getReference().child("notifications");
         mUser_current = FirebaseAuth.getInstance().getCurrentUser();
 
         profDispName = findViewById(R.id.profile_disp_name);
@@ -85,9 +88,9 @@ public class ProfileActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
 
-                        if (dataSnapshot.hasChild(user_key))
+                        if (dataSnapshot.hasChild(user_id))
                         {
-                            String req_type = dataSnapshot.child(user_key).child("request_type").getValue().toString();
+                            String req_type = dataSnapshot.child(user_id).child("request_type").getValue().toString();
 
                             if (req_type.equals("received")){
 
@@ -110,7 +113,7 @@ public class ProfileActivity extends AppCompatActivity {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
 
-                                    if(dataSnapshot.hasChild(user_key)){
+                                    if(dataSnapshot.hasChild(user_id)){
 
                                         requestButton.setText("Unfriend!");
                                         current_state = "friends";
@@ -149,29 +152,42 @@ public class ProfileActivity extends AppCompatActivity {
 
                 requestButton.setEnabled(false);
 
-                //----------------send request-----------------------
+                //----------------send request [NOT FRIENDS] and notification-----------------------
                 if(current_state.equals("not_friends"))
                 {
-                    friendsRequestDb.child(mUser_current.getUid()).child(user_key).child("request_type").setValue("sent")
+                    friendsRequestDb.child(mUser_current.getUid()).child(user_id).child("request_type").setValue("sent")
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
 
                             if (task.isSuccessful())
                             {
-                                friendsRequestDb.child(user_key).child(mUser_current.getUid()).child("request_type")
+                                friendsRequestDb.child(user_id).child(mUser_current.getUid()).child("request_type")
                                         .setValue("received").addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
 
-                                        requestButton.setEnabled(true);
-                                        requestButton.setText("Cancel request");
-                                        current_state = "req_sent";
+                                        HashMap<String, String> notificationMap = new HashMap<>();
+                                        notificationMap.put("from", mUser_current.getUid());
+                                        notificationMap.put("type", "request");
 
-                                        declineBtn.setVisibility(View.INVISIBLE);
-                                        declineBtn.setEnabled(false);
+                                        mNotificationDb.child(user_id).push().setValue(notificationMap)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
 
-                                        Toast.makeText(ProfileActivity.this, "Request sent", Toast.LENGTH_LONG).show();
+                                                requestButton.setEnabled(true);
+                                                requestButton.setText("Cancel request");
+                                                current_state = "req_sent";
+
+                                                declineBtn.setVisibility(View.INVISIBLE);
+                                                declineBtn.setEnabled(false);
+
+                                                Toast.makeText(ProfileActivity.this, "Request sent", Toast.LENGTH_LONG).show();
+
+                                            }
+                                        });
+
                                     }
                                 });
 
@@ -182,15 +198,15 @@ public class ProfileActivity extends AppCompatActivity {
                     });
                 }
 
-                //--------------cancel request-------------------------
+                //--------------cancel request [STOP REQUEST]-------------------------
                 if(current_state.equals("req_sent"))
                 {
-                    friendsRequestDb.child(mUser_current.getUid()).child(user_key).removeValue()
+                    friendsRequestDb.child(mUser_current.getUid()).child(user_id).removeValue()
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
 
-                            friendsRequestDb.child(user_key).child(mUser_current.getUid()).removeValue()
+                            friendsRequestDb.child(user_id).child(mUser_current.getUid()).removeValue()
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
@@ -209,26 +225,26 @@ public class ProfileActivity extends AppCompatActivity {
                     });
                 }
 
-                //-----------------request received---------------------
+                //-----------------request received [ACCEPT FRIEND REQUEST]---------------------
                 if (current_state.equals("req_received")){
 
                     final String current_date = DateFormat.getDateTimeInstance().format(new Date());
-                    friendsDatabase.child(mUser_current.getUid()).child(user_key).setValue(current_date)
+                    friendsDatabase.child(mUser_current.getUid()).child(user_id).setValue(current_date)
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
 
-                            friendsDatabase.child(user_key).child(mUser_current.getUid()).setValue(current_date)
+                            friendsDatabase.child(user_id).child(mUser_current.getUid()).setValue(current_date)
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
 
-                                    friendsRequestDb.child(mUser_current.getUid()).child(user_key).removeValue()
+                                    friendsRequestDb.child(mUser_current.getUid()).child(user_id).removeValue()
                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                 @Override
                                                 public void onSuccess(Void aVoid) {
 
-                                                    friendsRequestDb.child(user_key).child(mUser_current.getUid()).removeValue()
+                                                    friendsRequestDb.child(user_id).child(mUser_current.getUid()).removeValue()
                                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                                 @Override
                                                                 public void onSuccess(Void aVoid) {
@@ -251,29 +267,8 @@ public class ProfileActivity extends AppCompatActivity {
                     });
                 }
 
-                //-----------------------unfriend person---------------------------------------
-                if(current_state.equals("friends"))
-                {
-                    friendsRequestDb.child(mUser_current.getUid()).child(user_key).removeValue()
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
+                //-----------------------unFriend person---------------------------------------
 
-                                    friendsRequestDb.child(user_key).child(mUser_current.getUid()).removeValue()
-                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void aVoid) {
-
-                                                    requestButton.setEnabled(true);
-                                                    requestButton.setText("Send chat Request");
-                                                    current_state = "not_friends";
-
-                                                    Toast.makeText(ProfileActivity.this, "DottyFriend removed list", Toast.LENGTH_LONG).show();
-                                                }
-                                            });
-                                }
-                            });
-                }
             }
         });
     }
