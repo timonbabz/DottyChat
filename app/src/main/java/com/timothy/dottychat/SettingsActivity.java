@@ -49,6 +49,8 @@ public class SettingsActivity extends AppCompatActivity {
     private Button btnchangeStatus, imageButton;
     private ProgressDialog mProgress;
 
+    private FirebaseAuth mAuth;
+    private DatabaseReference userRef;
     private DatabaseReference mUserDatabase;
     private FirebaseUser mcurrentUser;
     private static final int GALLERY_CHOOSE = 1;
@@ -72,10 +74,12 @@ public class SettingsActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("DottyChat Account Settings");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        mAuth = FirebaseAuth.getInstance();
         mcurrentUser = FirebaseAuth.getInstance().getCurrentUser();
         String user_id = mcurrentUser.getUid();
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("dottyUsers").child(user_id);
         mUserDatabase.keepSynced(true);
+        userRef = FirebaseDatabase.getInstance().getReference().child("dottyUsers").child(mAuth.getCurrentUser().getUid());
 
         mStorage = FirebaseStorage.getInstance().getReference();
 
@@ -235,6 +239,19 @@ public class SettingsActivity extends AppCompatActivity {
                 Exception error = result.getError();
             }
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        userRef.child("online").setValue(true);
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        userRef.child("online").setValue(false);
     }
 
 }

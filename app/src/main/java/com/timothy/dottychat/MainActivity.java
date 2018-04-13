@@ -11,6 +11,8 @@ import android.view.MenuItem;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private DottyTabsAdpater dottyTabsAdpater;
     private TabLayout mTabLayout;
+    private DatabaseReference userRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
         tToolbar = findViewById(R.id.main_page_appbar);
         setSupportActionBar(tToolbar);
         getSupportActionBar().setTitle("DottyChat");
+
+        userRef = FirebaseDatabase.getInstance().getReference().child("dottyUsers").child(mAuth.getCurrentUser().getUid());
 
         mViewPager = findViewById(R.id.view_tab);
         dottyTabsAdpater = new DottyTabsAdpater(getSupportFragmentManager());
@@ -49,6 +54,18 @@ public class MainActivity extends AppCompatActivity {
         if (currentUser == null){
 
             sendToStart();
+        }else {
+            userRef.child("online").setValue(true);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            userRef.child("online").setValue(false);
         }
     }
 

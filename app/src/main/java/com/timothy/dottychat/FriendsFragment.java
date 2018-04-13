@@ -1,7 +1,10 @@
 package com.timothy.dottychat;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -76,7 +80,7 @@ public class FriendsFragment extends Fragment {
             @Override
             protected void populateViewHolder(final FriendsViewHolder viewHolder, final Friends model, int position) {
                 viewHolder.setDate(model.getDate());
-                String user_list_id = getRef(position).getKey();
+                final String user_list_id = getRef(position).getKey();
 
                 mUsersDatabase.child(user_list_id).addValueEventListener(new ValueEventListener() {
                     @Override
@@ -85,9 +89,45 @@ public class FriendsFragment extends Fragment {
                         String userName = dataSnapshot.child("name").getValue().toString();
                         String userThumb = dataSnapshot.child("thumb_image").getValue().toString();
 
+
+                        if (dataSnapshot.hasChild("online"))
+                        {
+                            boolean userOnline = (boolean) dataSnapshot.child("online").getValue();
+                            viewHolder.setUserOnline(userOnline);
+                        }
+
                         viewHolder.setName(userName);
                         viewHolder.setImage(userThumb, getContext());
 
+                        viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+
+                                CharSequence options[] = new CharSequence[]{"View profile", "Chat"};
+                                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                                builder.setTitle("Select options");
+                                builder.setItems(options, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                                        if (i == 0)
+                                        {
+                                            Intent profile_intent = new Intent(getContext(), ProfileActivity.class);
+                                            profile_intent.putExtra("user_id", user_list_id);
+                                            startActivity(profile_intent);
+                                        }
+                                        if (i == 1)
+                                        {
+                                            Intent chat_intent = new Intent(getContext(), ChatActivity.class);
+                                            startActivity(chat_intent);
+                                        }
+
+                                    }
+                                });
+
+                                builder.show();
+                            }
+                        });
                     }
 
                     @Override
@@ -127,6 +167,18 @@ public class FriendsFragment extends Fragment {
 
             CircleImageView imageList = mView.findViewById(R.id.prof_avatar);
             Picasso.with(ctx).load(thumb_image).placeholder(R.drawable.myavatar).into(imageList);
+        }
+
+        public void setUserOnline(boolean online_status){
+
+            ImageView iconOnline = mView.findViewById(R.id.imageViewOnline);
+
+            if (online_status == true){
+
+                iconOnline.setVisibility(View.VISIBLE);
+            }else{
+                iconOnline.setVisibility(View.INVISIBLE);
+            }
         }
     }
 }

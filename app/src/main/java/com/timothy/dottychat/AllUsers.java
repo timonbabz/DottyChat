@@ -9,6 +9,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -102,6 +103,18 @@ public class AllUsers extends AppCompatActivity {
 
             CircleImageView imageList = mView.findViewById(R.id.prof_avatar);
             Picasso.with(ctx).load(thumb_image).placeholder(R.drawable.myavatar).into(imageList);
+        }
+
+        public void setUserOnline(boolean online_status){
+
+            ImageView iconOnline = mView.findViewById(R.id.imageViewOnline);
+
+            if (online_status == true){
+
+                iconOnline.setVisibility(View.VISIBLE);
+            }else{
+                iconOnline.setVisibility(View.INVISIBLE);
+            }
         }
     }
 }

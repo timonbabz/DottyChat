@@ -2,7 +2,12 @@ package com.timothy.dottychat;
 
 import android.app.Application;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
@@ -11,6 +16,9 @@ import com.squareup.picasso.Picasso;
  */
 
 public class DottyChat extends Application {
+
+    private FirebaseAuth mAuth;
+    private DatabaseReference mUserDatabse;
 
     @Override
     public void onCreate() {
@@ -24,5 +32,26 @@ public class DottyChat extends Application {
         built.setIndicatorsEnabled(true);
         built.setLoggingEnabled(true);
         Picasso.setSingletonInstance(built);
+
+        mAuth = FirebaseAuth.getInstance();
+        mUserDatabse = FirebaseDatabase.getInstance()
+                .getReference().child("dottyUsers").child(mAuth.getCurrentUser().getUid());
+
+        mUserDatabse.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                if (dataSnapshot != null)
+                {
+                    mUserDatabse.child("online").onDisconnect().setValue(false);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 }

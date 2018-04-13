@@ -38,12 +38,14 @@ public class ProfileActivity extends AppCompatActivity {
     private Button declineBtn;
     private ProgressDialog loadProgress;
 
+    private FirebaseAuth mAuth;
     private DatabaseReference usersDatabase;
     private DatabaseReference friendsRequestDb;
     private DatabaseReference friendsDatabase;
     private DatabaseReference mNotificationDb;
     private DatabaseReference mRootRef;
     private FirebaseUser mUser_current;
+    private DatabaseReference userRef;
 
     private String current_state;
     @Override
@@ -53,12 +55,14 @@ public class ProfileActivity extends AppCompatActivity {
 
         final String user_id = getIntent().getStringExtra("user_id");
 
+        mAuth = FirebaseAuth.getInstance();
         usersDatabase = FirebaseDatabase.getInstance().getReference().child("dottyUsers").child(user_id);
         friendsRequestDb = FirebaseDatabase.getInstance().getReference().child("friend_requests");
         friendsDatabase = FirebaseDatabase.getInstance().getReference().child("friends");
         mNotificationDb = FirebaseDatabase.getInstance().getReference().child("notifications");
         mRootRef = FirebaseDatabase.getInstance().getReference();
         mUser_current = FirebaseAuth.getInstance().getCurrentUser();
+        userRef = FirebaseDatabase.getInstance().getReference().child("dottyUsers").child(mAuth.getCurrentUser().getUid());
 
         profDispName = findViewById(R.id.profile_disp_name);
         statusView = findViewById(R.id.profile_status_name);
@@ -280,5 +284,17 @@ public class ProfileActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+            userRef.child("online").setValue(true);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        userRef.child("online").setValue(false);
     }
 }
