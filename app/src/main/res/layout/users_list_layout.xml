@@ -9,10 +9,12 @@
         android:id="@+id/prof_avatar"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:src="@drawable/myavatar"
+        android:src="@drawable/newest_avatar"
         android:layout_marginTop="15dp"
         android:layout_marginLeft="15dp"
-        android:layout_marginBottom="15dp"/>
+        android:layout_marginBottom="15dp"
+        app:civ_border_color="@color/colorPrimaryDark"
+        app:civ_border_width="2dp" />/>
 
     <TextView
         android:id="@+id/name_list"

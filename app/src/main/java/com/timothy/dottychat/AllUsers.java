@@ -102,7 +102,7 @@ public class AllUsers extends AppCompatActivity {
         public void setImage(String thumb_image, Context ctx){
 
             CircleImageView imageList = mView.findViewById(R.id.prof_avatar);
-            Picasso.with(ctx).load(thumb_image).placeholder(R.drawable.myavatar).into(imageList);
+            Picasso.with(ctx).load(thumb_image).placeholder(R.drawable.newest_avatar).into(imageList);
         }
 
         public void setUserOnline(boolean online_status){

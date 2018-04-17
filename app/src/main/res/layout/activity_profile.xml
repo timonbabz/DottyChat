@@ -10,14 +10,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@color/colorPrimaryDark">
+        android:background="@color/blue">
 
         <ImageView
             android:id="@+id/other_profImage"
             android:layout_width="match_parent"
             android:layout_height="290dp"
             android:layout_marginTop="10dp"
-            android:src="@drawable/profile"/>
+            android:src="@drawable/newest_avatar"/>
 
         <TextView
             android:id="@+id/profile_disp_name"

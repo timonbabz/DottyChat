@@ -86,13 +86,13 @@ public class FriendsFragment extends Fragment {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
 
-                        String userName = dataSnapshot.child("name").getValue().toString();
+                        final String userName = dataSnapshot.child("name").getValue().toString();
                         String userThumb = dataSnapshot.child("thumb_image").getValue().toString();
 
 
                         if (dataSnapshot.hasChild("online"))
                         {
-                            boolean userOnline = (boolean) dataSnapshot.child("online").getValue();
+                            String userOnline = dataSnapshot.child("online").getValue().toString();
                             viewHolder.setUserOnline(userOnline);
                         }
 
@@ -119,6 +119,8 @@ public class FriendsFragment extends Fragment {
                                         if (i == 1)
                                         {
                                             Intent chat_intent = new Intent(getContext(), ChatActivity.class);
+                                            chat_intent.putExtra("user_name", userName);
+                                            chat_intent.putExtra("user_id", user_list_id);
                                             startActivity(chat_intent);
                                         }
 
@@ -166,14 +168,14 @@ public class FriendsFragment extends Fragment {
         public void setImage(String thumb_image, Context ctx){
 
             CircleImageView imageList = mView.findViewById(R.id.prof_avatar);
-            Picasso.with(ctx).load(thumb_image).placeholder(R.drawable.myavatar).into(imageList);
+            Picasso.with(ctx).load(thumb_image).placeholder(R.drawable.newest_avatar).into(imageList);
         }
 
-        public void setUserOnline(boolean online_status){
+        public void setUserOnline(String online_status) {
 
             ImageView iconOnline = mView.findViewById(R.id.imageViewOnline);
 
-            if (online_status == true){
+            if (online_status.equals("true")){
 
                 iconOnline.setVisibility(View.VISIBLE);
             }else{

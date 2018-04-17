@@ -7,4 +7,6 @@
     <color name="blue">#3bc9d9</color>
     <color name="black">#FF000000</color>
     <color name="new_start">#FF0A1825</color>
+    <color name="chat_interface">#bec0c1</color>
+    <color name="greyish">#FFBEC0C1</color>
 </resources>

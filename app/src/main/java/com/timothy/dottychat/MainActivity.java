@@ -13,6 +13,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,7 +35,12 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(tToolbar);
         getSupportActionBar().setTitle("DottyChat");
 
-        userRef = FirebaseDatabase.getInstance().getReference().child("dottyUsers").child(mAuth.getCurrentUser().getUid());
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            //do nothing
+        }
+        else {
+            userRef = FirebaseDatabase.getInstance().getReference().child("dottyUsers").child(mAuth.getCurrentUser().getUid());
+        }
 
         mViewPager = findViewById(R.id.view_tab);
         dottyTabsAdpater = new DottyTabsAdpater(getSupportFragmentManager());
@@ -65,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            userRef.child("online").setValue(false);
+            userRef.child("online").setValue(ServerValue.TIMESTAMP);
         }
     }
 
