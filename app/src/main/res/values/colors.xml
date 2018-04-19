@@ -9,4 +9,5 @@
     <color name="new_start">#FF0A1825</color>
     <color name="chat_interface">#bec0c1</color>
     <color name="greyish">#FFBEC0C1</color>
+    <color name="chat_blue">#FF1250C4</color>
 </resources>
