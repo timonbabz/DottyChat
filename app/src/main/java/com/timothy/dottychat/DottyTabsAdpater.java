@@ -19,8 +19,8 @@ class DottyTabsAdpater extends FragmentPagerAdapter{
         switch (position)
         {
             case 0:
-                RequestFragment requestFragment = new RequestFragment();
-                return requestFragment;
+                FavouritesFragment favouritesFragment = new FavouritesFragment();
+                return favouritesFragment;
             case 1:
                 ChatFragment chatFragment = new ChatFragment();
                 return chatFragment;

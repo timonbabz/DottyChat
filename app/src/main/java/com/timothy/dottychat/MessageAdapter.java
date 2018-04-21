@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -20,9 +21,9 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
 
-
     private List<Messages> mMessageList;
     private DatabaseReference mUserDatabase;
+    private FirebaseAuth mAuth;
 
     public MessageAdapter(List<Messages> mMessageList) {
 
@@ -36,26 +37,28 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.message_list_layout ,parent, false);
 
+        mAuth = FirebaseAuth.getInstance();
+
         return new MessageViewHolder(v);
 
     }
 
     public class MessageViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView messageText;
+        public TextView messageText, messageTime;
         public CircleImageView profileImage;
-        //public TextView displayName;
-        //public ImageView messageImage;
+        public ImageView messageImage;
 
         public MessageViewHolder(View view) {
             super(view);
 
-            messageText = (TextView) view.findViewById(R.id.user_chat_message);
-            profileImage = (CircleImageView) view.findViewById(R.id.chat_image);
+            messageText = view.findViewById(R.id.user_chat_message);
+            messageTime = view.findViewById(R.id.time_display);
+            profileImage = view.findViewById(R.id.chat_image);
 
             //To be added later:
-            //displayName = (TextView) view.findViewById(R.id.name_text_layout);
-            //messageImage = (ImageView) view.findViewById(R.id.message_image_layout);
+            //displayName = view.findViewById(R.id.name_text_layout);
+            messageImage = view.findViewById(R.id.image_message);
 
         }
     }
@@ -63,11 +66,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public void onBindViewHolder(final MessageViewHolder viewHolder, int i) {
 
+        String current_user = mAuth.getCurrentUser().getUid();
         Messages c = mMessageList.get(i);
-
         String from_user = c.getFrom();
         String message_type = c.getType();
-
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("dottyUsers").child(from_user);
 
@@ -94,14 +96,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         if(message_type.equals("text")) {
 
             viewHolder.messageText.setText(c.getMessage());
-           // viewHolder.messageImage.setVisibility(View.INVISIBLE);
-
+            viewHolder.messageTime.setText(c.getTime().toString());
+            viewHolder.messageImage.setVisibility(View.INVISIBLE);
 
         } else {
 
             viewHolder.messageText.setVisibility(View.INVISIBLE);
-            //Picasso.with(viewHolder.profileImage.getContext()).load(c.getMessage())
-             //       .placeholder(R.drawable.newest_avatar).into(viewHolder.messageImage);
+            viewHolder.messageTime.setText(c.getTime().toString());
+            Picasso.with(viewHolder.profileImage.getContext()).load(c.getMessage())
+            .placeholder(R.drawable.newest_avatar).into(viewHolder.messageImage);
 
         }
 

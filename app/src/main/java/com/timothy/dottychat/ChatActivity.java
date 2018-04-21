@@ -1,6 +1,10 @@
 package com.timothy.dottychat;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,12 +12,16 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -23,7 +31,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,12 +56,15 @@ public class ChatActivity extends AppCompatActivity {
     private CircleImageView imageView;
     private ImageButton chatAddBtn;
     private ImageButton sendChatBtn;
+    private ImageView imageMessage;
     private EditText chatMessage;
     private RecyclerView messageRecycler;
+    private SwipeRefreshLayout mRefreshLayout;
 
     private DatabaseReference mRootRef;
     private FirebaseAuth mAuth;
     private  MessageAdapter mAdapter;
+    private StorageReference mImageStorage;
 
     private int itemPos = 0;
 
@@ -93,15 +108,18 @@ public class ChatActivity extends AppCompatActivity {
         chatAddBtn = findViewById(R.id.add_button);
         sendChatBtn = findViewById(R.id.send_chat);
         chatMessage = findViewById(R.id.enter_chat_message);
+        imageMessage = findViewById(R.id.image_message);
 
         mAdapter = new MessageAdapter(messagesChat);
 
+        mRefreshLayout = findViewById(R.id.swipe_layout);
         messageRecycler = findViewById(R.id.message_list);
         linearLayoutManager = new LinearLayoutManager(this);
         messageRecycler.setHasFixedSize(true);
         messageRecycler.setLayoutManager(linearLayoutManager);
         messageRecycler.setAdapter(mAdapter);
 
+        mImageStorage = FirebaseStorage.getInstance().getReference();
         loadMessages();
 
         dispName.setText(userName);
@@ -173,13 +191,158 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        //--------------swipe action for the recycler view------------------------------------------
+        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+
+                mCurrentPage++;
+
+                itemPos = 0;
+
+                loadMoreMessages();
+
+            }
+        });
+
         //----------------on click listener for add buttton-----------------------------------------
         chatAddBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
+                Intent galleryIntent = new Intent();
+                galleryIntent.setType("image/*");
+                galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
+
+                startActivityForResult(Intent.createChooser(galleryIntent, "SELECT IMAGE"), GALLERY_PICK);
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == GALLERY_PICK && resultCode == RESULT_OK){
+
+            Uri imageUri = data.getData();
+
+            final String current_user_ref = "messages/" + mCurrentUserId + "/" + chat_user;
+            final String chat_user_ref = "messages/" + chat_user + "/" + mCurrentUserId;
+
+            DatabaseReference user_message_push = mRootRef.child("messages")
+                    .child(mCurrentUserId).child(chat_user).push();
+
+            final String push_id = user_message_push.getKey();
+
+
+            StorageReference filepath = mImageStorage.child("message_images").child( push_id + ".jpg");
+
+            filepath.putFile(imageUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+
+                    if(task.isSuccessful()){
+
+                        String download_url = task.getResult().getDownloadUrl().toString();
+
+
+                        Map messageMap = new HashMap();
+                        messageMap.put("message", download_url);
+                        messageMap.put("seen", false);
+                        messageMap.put("type", "image");
+                        messageMap.put("time", ServerValue.TIMESTAMP);
+                        messageMap.put("from", mCurrentUserId);
+
+                        Map messageUserMap = new HashMap();
+                        messageUserMap.put(current_user_ref + "/" + push_id, messageMap);
+                        messageUserMap.put(chat_user_ref + "/" + push_id, messageMap);
+
+                        chatMessage.setText("");
+
+                        mRootRef.updateChildren(messageUserMap, new DatabaseReference.CompletionListener() {
+                            @Override
+                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+
+                                if(databaseError != null){
+
+                                    Log.d("CHAT_LOG", databaseError.getMessage().toString());
+
+                                }
+
+                            }
+                        });
+
+
+                    }
+
+                }
+            });
+
+        }
+
+    }
+    private void loadMoreMessages() {
+
+        DatabaseReference messageRef = mRootRef.child("messages").child(mCurrentUserId).child(chat_user);
+
+        Query messageQuery = messageRef.orderByKey().endAt(mLastKey).limitToLast(10);
+
+        messageQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+
+                Messages message = dataSnapshot.getValue(Messages.class);
+                String messageKey = dataSnapshot.getKey();
+
+                if(!mPrevKey.equals(messageKey)){
+
+                    messagesChat.add(itemPos++, message);
+
+                } else {
+
+                    mPrevKey = mLastKey;
+
+                }
+
+                if(itemPos == 1) {
+
+                    mLastKey = messageKey;
+
+                }
+
+                Log.d("TOTALKEYS", "Last Key : " + mLastKey + " | Prev Key : " + mPrevKey + " | Message Key : " + messageKey);
+
+                mAdapter.notifyDataSetChanged();
+
+                mRefreshLayout.setRefreshing(false);
+
+                linearLayoutManager.scrollToPositionWithOffset(10, 0);
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
     private void loadMessages() {
@@ -210,7 +373,7 @@ public class ChatActivity extends AppCompatActivity {
                 mAdapter.notifyDataSetChanged();
                 messageRecycler.scrollToPosition(messagesChat.size() - 1);
 
-               // mRefreshLayout.setRefreshing(false);
+                mRefreshLayout.setRefreshing(false);
 
             }
 
@@ -270,6 +433,34 @@ public class ChatActivity extends AppCompatActivity {
 
                 }
             });
+        }else{
+            sendChatBtn.setEnabled(false);
+            sendChatBtn.setImageResource(R.drawable.send_inactive);
         }
+    }
+
+    private void deleteMessage() {
+
+        String message = chatMessage.getText().toString();
+
+            String current_user_ref = "messages/" + mCurrentUserId + "/" + chat_user;
+            String chat_user_ref = "messages/" + chat_user + "/" + mCurrentUserId;
+
+            DatabaseReference userMessageId= mRootRef.child("messages")
+                    .child(mCurrentUserId).child(chat_user).push();
+
+            String msgId = userMessageId.getKey();
+
+            Map messageMap = new HashMap();
+            messageMap.put("message", message);
+            messageMap.put("seen", false);
+            messageMap.put("type", "text");
+            messageMap.put("time", ServerValue.TIMESTAMP);
+            messageMap.put("from", mCurrentUserId);
+
+            Map userMessageMap = new HashMap();
+            userMessageMap.put(current_user_ref + "/" + msgId, messageMap);
+            userMessageMap.put(chat_user_ref + "/" + msgId, messageMap);
+            
     }
 }

@@ -82,6 +82,23 @@ public class ProfileActivity extends AppCompatActivity {
         loadProgress.setCanceledOnTouchOutside(false);
         loadProgress.show();
 
+        friendsDatabase.child(user_id).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                long usersCount = dataSnapshot.getChildrenCount();
+
+                if(usersCount > 0){
+
+                    usersNumber.setText((int) usersCount);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         usersDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

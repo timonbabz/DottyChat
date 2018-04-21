@@ -38,6 +38,7 @@ public class FriendsFragment extends Fragment {
     private String current_user_id;
     private View mainView;
     private DatabaseReference mUsersDatabase;
+    private DatabaseReference favouriteUsers;
 
     public FriendsFragment() {
         // Required empty public constructor
@@ -55,6 +56,8 @@ public class FriendsFragment extends Fragment {
         mFriendsDatabase = FirebaseDatabase.getInstance().getReference().child("friends").child(current_user_id);
         mFriendsDatabase.keepSynced(true);
         mUsersDatabase = FirebaseDatabase.getInstance().getReference().child("dottyUsers");
+        favouriteUsers = FirebaseDatabase.getInstance().getReference().child("favourites").child(current_user_id);
+
         mUsersDatabase.keepSynced(true);
 
         mFriendsList.setHasFixedSize(true);
@@ -103,7 +106,7 @@ public class FriendsFragment extends Fragment {
                             @Override
                             public void onClick(View view) {
 
-                                CharSequence options[] = new CharSequence[]{"View profile", "Chat"};
+                                CharSequence options[] = new CharSequence[]{"View profile", "Chat", "Add to Favourites"};
                                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                                 builder.setTitle("Select options");
                                 builder.setItems(options, new DialogInterface.OnClickListener() {
@@ -122,6 +125,10 @@ public class FriendsFragment extends Fragment {
                                             chat_intent.putExtra("user_name", userName);
                                             chat_intent.putExtra("user_id", user_list_id);
                                             startActivity(chat_intent);
+                                        }
+                                        if (i == 2)
+                                        {
+                                            favouriteUsers.child(user_list_id).setValue(userName);
                                         }
 
                                     }

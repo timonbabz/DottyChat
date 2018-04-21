@@ -9,14 +9,24 @@
 
     <include layout="@layout/app_bar" android:id="@+id/chat_bar"/>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/message_list"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:layout_below="@id/chat_bar"
+        android:id="@+id/swipe_layout"
         android:layout_width="match_parent"
-        android:layout_height="461dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="56dp"></android.support.v7.widget.RecyclerView>
+        android:layout_height="wrap_content"
+        android:layout_above="@id/message_layout">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/message_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="56dp">
+        </android.support.v7.widget.RecyclerView>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 
     <LinearLayout
         android:id="@+id/message_layout"
